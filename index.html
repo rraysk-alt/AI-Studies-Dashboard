@@ -1,0 +1,545 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>AI in Dentistry — Research Tracker</title>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; background: #f4f6f9; color: #1a2332; }
+
+    /* Header */
+    header {
+      background: linear-gradient(135deg, #0f2744 0%, #1a4480 100%);
+      color: white; padding: 40px 48px 32px;
+    }
+    header h1 { font-size: 28px; font-weight: 700; letter-spacing: -0.5px; margin-bottom: 6px; }
+    header p { font-size: 15px; opacity: 0.7; }
+    .header-meta { margin-top: 6px; font-size: 13px; opacity: 0.55; }
+
+    /* Stats bar */
+    .stats-bar {
+      display: flex; gap: 0;
+      background: #162d52;
+      border-top: 1px solid rgba(255,255,255,0.08);
+    }
+    .stat-card {
+      flex: 1; padding: 20px 24px; border-right: 1px solid rgba(255,255,255,0.08);
+      text-align: center;
+    }
+    .stat-card:last-child { border-right: none; }
+    .stat-number { font-size: 32px; font-weight: 700; color: #fff; line-height: 1; }
+    .stat-label { font-size: 12px; color: rgba(255,255,255,0.5); margin-top: 4px; text-transform: uppercase; letter-spacing: 0.5px; }
+
+    /* Main layout */
+    main { max-width: 1280px; margin: 0 auto; padding: 36px 24px; }
+
+    /* Section titles */
+    .section-title {
+      font-size: 13px; font-weight: 600; text-transform: uppercase;
+      letter-spacing: 1px; color: #6b7a99; margin-bottom: 16px;
+    }
+
+    /* Charts grid */
+    .charts-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 24px; margin-bottom: 28px; }
+    .charts-grid.three { grid-template-columns: 2fr 1fr 1fr; }
+    .chart-card {
+      background: white; border-radius: 12px; padding: 24px;
+      box-shadow: 0 1px 3px rgba(0,0,0,0.06), 0 1px 8px rgba(0,0,0,0.04);
+    }
+    .chart-title { font-size: 14px; font-weight: 600; color: #1a2332; margin-bottom: 4px; }
+    .chart-subtitle { font-size: 12px; color: #9aa3b8; margin-bottom: 20px; }
+    .chart-container { position: relative; }
+
+    /* Signal badges */
+    .signal-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; margin-bottom: 28px; }
+    .signal-card {
+      background: white; border-radius: 12px; padding: 20px 24px;
+      box-shadow: 0 1px 3px rgba(0,0,0,0.06);
+      border-left: 4px solid #e2e8f0;
+    }
+    .signal-card.real { border-left-color: #10b981; }
+    .signal-card.promising { border-left-color: #3b82f6; }
+    .signal-card.hype { border-left-color: #ef4444; }
+    .signal-card.unclear { border-left-color: #94a3b8; }
+    .signal-label { font-size: 11px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.5px; color: #9aa3b8; margin-bottom: 8px; }
+    .signal-count { font-size: 36px; font-weight: 700; line-height: 1; }
+    .signal-card.real .signal-count { color: #10b981; }
+    .signal-card.promising .signal-count { color: #3b82f6; }
+    .signal-card.hype .signal-count { color: #ef4444; }
+    .signal-card.unclear .signal-count { color: #94a3b8; }
+    .signal-desc { font-size: 12px; color: #6b7a99; margin-top: 6px; }
+
+    /* Highlights */
+    .highlights { margin-bottom: 28px; }
+    .highlight-card {
+      background: white; border-radius: 12px; padding: 24px;
+      box-shadow: 0 1px 3px rgba(0,0,0,0.06);
+    }
+    .highlight-item {
+      display: flex; align-items: flex-start; gap: 16px;
+      padding: 16px 0; border-bottom: 1px solid #f1f4f9;
+    }
+    .highlight-item:last-child { border-bottom: none; padding-bottom: 0; }
+    .highlight-item:first-child { padding-top: 0; }
+    .highlight-badge {
+      flex-shrink: 0; padding: 4px 10px; border-radius: 20px;
+      font-size: 11px; font-weight: 600; white-space: nowrap; margin-top: 2px;
+    }
+    .badge-real { background: #d1fae5; color: #065f46; }
+    .badge-promising { background: #dbeafe; color: #1e40af; }
+    .badge-hype { background: #fee2e2; color: #991b1b; }
+    .badge-unclear { background: #f1f5f9; color: #64748b; }
+    .highlight-content .title { font-size: 14px; font-weight: 600; color: #1a2332; line-height: 1.4; margin-bottom: 4px; }
+    .highlight-content .finding { font-size: 13px; color: #6b7a99; line-height: 1.5; }
+    .highlight-content .meta { font-size: 12px; color: #aab0c0; margin-top: 6px; }
+    .highlight-content a { color: #3b82f6; text-decoration: none; font-weight: 500; }
+    .highlight-content a:hover { text-decoration: underline; }
+
+    /* Studies table */
+    .table-section { background: white; border-radius: 12px; padding: 24px; box-shadow: 0 1px 3px rgba(0,0,0,0.06); }
+    .table-controls { display: flex; gap: 12px; margin-bottom: 20px; flex-wrap: wrap; align-items: center; }
+    .table-controls input {
+      flex: 1; min-width: 200px; padding: 9px 14px;
+      border: 1px solid #e2e8f0; border-radius: 8px; font-size: 14px;
+      outline: none; transition: border-color 0.15s;
+    }
+    .table-controls input:focus { border-color: #3b82f6; }
+    .table-controls select {
+      padding: 9px 14px; border: 1px solid #e2e8f0; border-radius: 8px;
+      font-size: 13px; background: white; outline: none; cursor: pointer;
+    }
+    .table-count { font-size: 13px; color: #9aa3b8; margin-left: auto; white-space: nowrap; }
+    table { width: 100%; border-collapse: collapse; font-size: 13px; }
+    th { text-align: left; padding: 10px 14px; color: #6b7a99; font-size: 11px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.5px; border-bottom: 2px solid #f1f4f9; }
+    td { padding: 14px 14px; vertical-align: top; border-bottom: 1px solid #f8fafc; }
+    tr:hover td { background: #fafbfd; }
+    .td-title { font-weight: 500; color: #1a2332; line-height: 1.4; max-width: 360px; }
+    .td-title a { color: inherit; text-decoration: none; }
+    .td-title a:hover { color: #3b82f6; }
+    .td-meta { color: #9aa3b8; font-size: 12px; margin-top: 3px; }
+    .pill {
+      display: inline-block; padding: 3px 9px; border-radius: 20px;
+      font-size: 11px; font-weight: 500; white-space: nowrap;
+    }
+    .pill-real { background: #d1fae5; color: #065f46; }
+    .pill-promising { background: #dbeafe; color: #1e40af; }
+    .pill-hype { background: #fee2e2; color: #991b1b; }
+    .pill-unclear { background: #f1f5f9; color: #64748b; }
+    .pill-q1 { background: #fef3c7; color: #92400e; }
+    .pill-q2 { background: #e0e7ff; color: #3730a3; }
+    .pill-q3 { background: #f3f4f6; color: #4b5563; }
+    .show-more {
+      width: 100%; margin-top: 16px; padding: 10px; background: #f8fafc;
+      border: 1px solid #e2e8f0; border-radius: 8px; cursor: pointer;
+      font-size: 13px; color: #6b7a99; font-weight: 500; transition: all 0.15s;
+    }
+    .show-more:hover { background: #eef2ff; color: #3b82f6; border-color: #c7d2fe; }
+
+    /* Footer */
+    footer { text-align: center; padding: 32px; color: #9aa3b8; font-size: 12px; }
+    footer a { color: #6b7a99; }
+
+    @media (max-width: 768px) {
+      header { padding: 24px 20px; }
+      .stats-bar { flex-wrap: wrap; }
+      .stat-card { min-width: 50%; border-bottom: 1px solid rgba(255,255,255,0.08); }
+      .charts-grid, .charts-grid.three { grid-template-columns: 1fr; }
+      .signal-grid { grid-template-columns: 1fr 1fr; }
+      main { padding: 20px 16px; }
+    }
+  </style>
+</head>
+<body>
+
+<header>
+  <h1>AI in Dentistry — Research Tracker</h1>
+  <p>Automated tracking of artificial intelligence research across dental specialties</p>
+  <div class="header-meta" id="lastUpdated">Loading...</div>
+  <div class="stats-bar" style="margin: 24px -48px -32px; padding: 0 48px;">
+    <div class="stat-card">
+      <div class="stat-number" id="totalStudies">—</div>
+      <div class="stat-label">Total Studies</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-number" id="specialtiesCount">—</div>
+      <div class="stat-label">Specialties</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-number" id="last30Days">—</div>
+      <div class="stat-label">Last 30 Days</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-number" id="q1Count">—</div>
+      <div class="stat-label">Q1 Journals</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-number" id="readyCount">—</div>
+      <div class="stat-label">Practice-Ready</div>
+    </div>
+  </div>
+</header>
+
+<main>
+
+  <!-- Signal Summary -->
+  <div class="section-title" style="margin-top:8px;">Evidence Signal</div>
+  <div class="signal-grid" id="signalGrid"></div>
+
+  <!-- Charts Row 1 -->
+  <div class="section-title">Publications Over Time</div>
+  <div style="margin-bottom:28px;">
+    <div class="chart-card">
+      <div class="chart-title">Monthly Publication Volume</div>
+      <div class="chart-subtitle">AI-related dental research indexed per month</div>
+      <div class="chart-container" style="height:200px;">
+        <canvas id="timelineChart"></canvas>
+      </div>
+    </div>
+  </div>
+
+  <!-- Charts Row 2 -->
+  <div class="section-title">Breakdown by Category</div>
+  <div class="charts-grid three" style="margin-bottom:28px;">
+    <div class="chart-card">
+      <div class="chart-title">By Dental Specialty</div>
+      <div class="chart-subtitle">Distribution across disciplines</div>
+      <div class="chart-container" style="height:260px;">
+        <canvas id="disciplineChart"></canvas>
+      </div>
+    </div>
+    <div class="chart-card">
+      <div class="chart-title">By Topic Area</div>
+      <div class="chart-subtitle">Research focus categories</div>
+      <div class="chart-container" style="height:260px;">
+        <canvas id="topicChart"></canvas>
+      </div>
+    </div>
+    <div class="chart-card">
+      <div class="chart-title">Journal Quality</div>
+      <div class="chart-subtitle">SCImago quartile distribution</div>
+      <div class="chart-container" style="height:260px;">
+        <canvas id="quartileChart"></canvas>
+      </div>
+    </div>
+  </div>
+
+  <!-- Highlights -->
+  <div class="section-title">Recent Highlights</div>
+  <div class="highlights">
+    <div class="highlight-card" id="highlightsList"></div>
+  </div>
+
+  <!-- Studies Table -->
+  <div class="section-title">All Studies</div>
+  <div class="table-section">
+    <div class="table-controls">
+      <input type="text" id="searchInput" placeholder="Search by title, author, keyword…" oninput="filterTable()" />
+      <select id="disciplineFilter" onchange="filterTable()">
+        <option value="">All specialties</option>
+      </select>
+      <select id="hypeFilter" onchange="filterTable()">
+        <option value="">All signals</option>
+        <option value="Real (practice-ready evidence)">Practice-ready</option>
+        <option value="Promising (needs validation)">Promising</option>
+        <option value="Hype (claims > evidence)">Hype</option>
+        <option value="Unclear (abstract-limited)">Unclear</option>
+      </select>
+      <div class="table-count" id="tableCount"></div>
+    </div>
+    <table id="studiesTable">
+      <thead>
+        <tr>
+          <th>Study</th>
+          <th>Specialty</th>
+          <th>Signal</th>
+          <th>Journal</th>
+          <th>Date</th>
+        </tr>
+      </thead>
+      <tbody id="tableBody"></tbody>
+    </table>
+    <button class="show-more" id="showMoreBtn" onclick="showMore()" style="display:none;">Show more studies</button>
+  </div>
+
+</main>
+
+<footer>
+  <p>Updated daily via automated RSS tracking · <a href="https://github.com" target="_blank">View source</a></p>
+</footer>
+
+<script>
+// ─── CONFIG ──────────────────────────────────────────────────────────────────
+const DATA_URL = 'data.json';
+const INITIAL_ROWS = 20;
+
+// ─── PALETTE ─────────────────────────────────────────────────────────────────
+const BLUES = ['#0f4c81','#1a6bb5','#2e8fd4','#54a8e0','#7ec5ef','#a8d9f5','#c8e8fb','#dff0fd','#eef7fd','#f5fbff','#0d3d68','#1557a0'];
+const GREENS = ['#065f46','#047857','#059669','#10b981','#34d399','#6ee7b7'];
+
+// ─── DATA ────────────────────────────────────────────────────────────────────
+let allStudies = [];
+let filtered = [];
+let shownCount = INITIAL_ROWS;
+
+async function loadData() {
+  try {
+    const res = await fetch(DATA_URL + '?t=' + Date.now());
+    const data = await res.json();
+    allStudies = data.studies || [];
+    document.getElementById('lastUpdated').textContent = 'Last updated: ' + (data.lastUpdated || '—');
+    init();
+  } catch(e) {
+    document.getElementById('lastUpdated').textContent = 'Error loading data';
+    console.error(e);
+  }
+}
+
+function init() {
+  filtered = [...allStudies];
+  renderStats();
+  renderSignals();
+  renderTimelineChart();
+  renderDisciplineChart();
+  renderTopicChart();
+  renderQuartileChart();
+  renderHighlights();
+  populateFilters();
+  renderTable();
+}
+
+// ─── STATS ───────────────────────────────────────────────────────────────────
+function renderStats() {
+  const total = allStudies.length;
+  const specialties = new Set(allStudies.map(s => s.discipline).filter(d => d && d !== 'Unknown' && d !== 'Unclear (abstract-limited)' && d !== 'Other')).size;
+  const thirtyDaysAgo = new Date(); thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
+  const last30 = allStudies.filter(s => s.date && new Date(s.date) >= thirtyDaysAgo).length;
+  const q1 = allStudies.filter(s => s.quartile === 'Q1').length;
+  const ready = allStudies.filter(s => s.hype === 'Real (practice-ready evidence)').length;
+
+  document.getElementById('totalStudies').textContent = total;
+  document.getElementById('specialtiesCount').textContent = specialties;
+  document.getElementById('last30Days').textContent = last30;
+  document.getElementById('q1Count').textContent = q1;
+  document.getElementById('readyCount').textContent = ready;
+}
+
+// ─── SIGNALS ─────────────────────────────────────────────────────────────────
+function renderSignals() {
+  const counts = {};
+  allStudies.forEach(s => { if(s.hype) counts[s.hype] = (counts[s.hype]||0)+1; });
+
+  const signals = [
+    { key: 'Real (practice-ready evidence)', cls: 'real', label: 'Practice-Ready', desc: 'Evidence supports clinical use' },
+    { key: 'Promising (needs validation)', cls: 'promising', label: 'Promising', desc: 'Strong potential, needs more evidence' },
+    { key: 'Hype (claims > evidence)', cls: 'hype', label: 'Hype', desc: 'Claims exceed supporting data' },
+    { key: 'Unclear (abstract-limited)', cls: 'unclear', label: 'Unclear', desc: 'Insufficient data to assess' },
+  ];
+
+  const grid = document.getElementById('signalGrid');
+  grid.innerHTML = signals.map(s => `
+    <div class="signal-card ${s.cls}">
+      <div class="signal-label">${s.label}</div>
+      <div class="signal-count">${counts[s.key]||0}</div>
+      <div class="signal-desc">${s.desc}</div>
+    </div>
+  `).join('');
+}
+
+// ─── CHARTS ──────────────────────────────────────────────────────────────────
+function renderTimelineChart() {
+  const counts = {};
+  allStudies.forEach(s => { if(s.month) counts[s.month] = (counts[s.month]||0)+1; });
+  const labels = Object.keys(counts).sort();
+  const values = labels.map(l => counts[l]);
+
+  new Chart(document.getElementById('timelineChart'), {
+    type: 'bar',
+    data: {
+      labels: labels.map(l => { const [y,m] = l.split('-'); return new Date(y,m-1).toLocaleDateString('en',{month:'short',year:'2-digit'}); }),
+      datasets: [{ data: values, backgroundColor: '#2e8fd4', borderRadius: 6, borderSkipped: false }]
+    },
+    options: {
+      responsive: true, maintainAspectRatio: false,
+      plugins: { legend: { display: false } },
+      scales: {
+        x: { grid: { display: false }, ticks: { font: { size: 12 } } },
+        y: { grid: { color: '#f1f4f9' }, ticks: { font: { size: 12 }, stepSize: 10 } }
+      }
+    }
+  });
+}
+
+function renderDisciplineChart() {
+  const counts = {};
+  allStudies.forEach(s => { const d = s.discipline; if(d && d!=='Unknown') counts[d]=(counts[d]||0)+1; });
+  const sorted = Object.entries(counts).sort((a,b)=>b[1]-a[1]);
+
+  new Chart(document.getElementById('disciplineChart'), {
+    type: 'bar',
+    data: {
+      labels: sorted.map(([k])=>k.replace('Oral and Maxillofacial ','OMF ').replace(' and Dentofacial Orthopedics','')),
+      datasets: [{ data: sorted.map(([,v])=>v), backgroundColor: BLUES.slice(0,sorted.length), borderRadius: 4, borderSkipped: false }]
+    },
+    options: {
+      indexAxis: 'y', responsive: true, maintainAspectRatio: false,
+      plugins: { legend: { display: false } },
+      scales: {
+        x: { grid: { color: '#f1f4f9' }, ticks: { font:{size:11} } },
+        y: { grid: { display: false }, ticks: { font:{size:11} } }
+      }
+    }
+  });
+}
+
+function renderTopicChart() {
+  const counts = {};
+  allStudies.forEach(s => { const t = s.topic; if(t && t!=='Unknown' && t!=='Other') counts[t]=(counts[t]||0)+1; });
+  const sorted = Object.entries(counts).sort((a,b)=>b[1]-a[1]).slice(0,8);
+  const topicColors = ['#0f4c81','#1a6bb5','#2e8fd4','#54a8e0','#7ec5ef','#a8d9f5','#c8e8fb','#dff0fd'];
+
+  new Chart(document.getElementById('topicChart'), {
+    type: 'doughnut',
+    data: {
+      labels: sorted.map(([k])=>k),
+      datasets: [{ data: sorted.map(([,v])=>v), backgroundColor: topicColors, borderWidth: 2, borderColor: '#fff' }]
+    },
+    options: {
+      responsive: true, maintainAspectRatio: false,
+      plugins: {
+        legend: { position: 'bottom', labels: { font:{size:10}, padding: 8, boxWidth: 10 } }
+      },
+      cutout: '60%'
+    }
+  });
+}
+
+function renderQuartileChart() {
+  const counts = { Q1: 0, Q2: 0, Q3: 0, Q4: 0 };
+  allStudies.forEach(s => { if(counts[s.quartile]!==undefined) counts[s.quartile]++; });
+  const labels = Object.keys(counts).filter(k=>counts[k]>0);
+  const values = labels.map(k=>counts[k]);
+
+  new Chart(document.getElementById('quartileChart'), {
+    type: 'doughnut',
+    data: {
+      labels, datasets: [{ data: values,
+        backgroundColor: ['#065f46','#059669','#34d399','#6ee7b7'],
+        borderWidth: 2, borderColor: '#fff' }]
+    },
+    options: {
+      responsive: true, maintainAspectRatio: false,
+      plugins: { legend: { position: 'bottom', labels: { font:{size:11}, padding:10, boxWidth:10 } } },
+      cutout: '60%'
+    }
+  });
+}
+
+// ─── HIGHLIGHTS ───────────────────────────────────────────────────────────────
+function renderHighlights() {
+  const recent = [...allStudies]
+    .filter(s => s.date && s.hype)
+    .sort((a,b) => new Date(b.date) - new Date(a.date))
+    .slice(0, 6);
+
+  const el = document.getElementById('highlightsList');
+  el.innerHTML = recent.map(s => {
+    const {pillClass, badgeClass} = getSignalClass(s.hype);
+    const findings = s.keyFindings ? s.keyFindings.substring(0,180) + (s.keyFindings.length>180?'…':'') : '';
+    return `
+      <div class="highlight-item">
+        <span class="highlight-badge ${badgeClass}">${shortSignal(s.hype)}</span>
+        <div class="highlight-content">
+          <div class="title">
+            ${s.pubmed ? `<a href="${s.pubmed}" target="_blank">${s.title}</a>` : s.title}
+          </div>
+          ${findings ? `<div class="finding">${findings}</div>` : ''}
+          <div class="meta">${s.discipline} · ${s.journal || ''} · ${formatDate(s.date)}</div>
+        </div>
+      </div>`;
+  }).join('');
+}
+
+// ─── TABLE ────────────────────────────────────────────────────────────────────
+function populateFilters() {
+  const disciplines = [...new Set(allStudies.map(s=>s.discipline).filter(Boolean))].sort();
+  const sel = document.getElementById('disciplineFilter');
+  disciplines.forEach(d => { const o=document.createElement('option'); o.value=d; o.textContent=d; sel.appendChild(o); });
+}
+
+function filterTable() {
+  const q = document.getElementById('searchInput').value.toLowerCase();
+  const disc = document.getElementById('disciplineFilter').value;
+  const hype = document.getElementById('hypeFilter').value;
+
+  filtered = allStudies.filter(s => {
+    const matchQ = !q || [s.title, s.keyFindings, s.firstAuthor, s.journal, s.discipline]
+      .some(f => f && f.toLowerCase().includes(q));
+    const matchD = !disc || s.discipline === disc;
+    const matchH = !hype || s.hype === hype;
+    return matchQ && matchD && matchH;
+  });
+
+  shownCount = INITIAL_ROWS;
+  renderTable();
+}
+
+function renderTable() {
+  const rows = filtered.slice(0, shownCount);
+  const tbody = document.getElementById('tableBody');
+
+  tbody.innerHTML = rows.map(s => {
+    const {pillClass} = getSignalClass(s.hype);
+    const qpill = s.quartile ? `<span class="pill pill-${s.quartile.toLowerCase()}">${s.quartile}</span>` : '';
+    return `<tr>
+      <td class="td-title">
+        ${s.pubmed ? `<a href="${s.pubmed}" target="_blank">${s.title}</a>` : s.title}
+        <div class="td-meta">${s.firstAuthor || ''}${s.firstAuthor && s.date?' · ':''}${formatDate(s.date)}</div>
+      </td>
+      <td style="white-space:nowrap; font-size:12px; color:#6b7a99;">${s.discipline||''}</td>
+      <td><span class="pill ${pillClass}">${shortSignal(s.hype)}</span></td>
+      <td style="font-size:12px; color:#6b7a99;">${s.journal||''} ${qpill}</td>
+      <td style="font-size:12px; color:#9aa3b8; white-space:nowrap;">${formatDate(s.date)}</td>
+    </tr>`;
+  }).join('');
+
+  document.getElementById('tableCount').textContent = `${filtered.length} studies`;
+  const btn = document.getElementById('showMoreBtn');
+  btn.style.display = filtered.length > shownCount ? 'block' : 'none';
+  btn.textContent = `Show ${Math.min(20, filtered.length - shownCount)} more of ${filtered.length - shownCount} remaining`;
+}
+
+function showMore() {
+  shownCount = Math.min(shownCount + 20, filtered.length);
+  renderTable();
+}
+
+// ─── HELPERS ─────────────────────────────────────────────────────────────────
+function getSignalClass(hype) {
+  if (!hype) return { pillClass: 'pill-unclear', badgeClass: 'badge-unclear' };
+  if (hype.startsWith('Real')) return { pillClass: 'pill-real', badgeClass: 'badge-real' };
+  if (hype.startsWith('Promising')) return { pillClass: 'pill-promising', badgeClass: 'badge-promising' };
+  if (hype.startsWith('Hype')) return { pillClass: 'pill-hype', badgeClass: 'badge-hype' };
+  return { pillClass: 'pill-unclear', badgeClass: 'badge-unclear' };
+}
+
+function shortSignal(hype) {
+  if (!hype) return 'Unclear';
+  if (hype.startsWith('Real')) return 'Practice-ready';
+  if (hype.startsWith('Promising')) return 'Promising';
+  if (hype.startsWith('Hype')) return 'Hype';
+  return 'Unclear';
+}
+
+function formatDate(d) {
+  if (!d) return '';
+  const dt = new Date(d + 'T00:00:00');
+  return dt.toLocaleDateString('en', { year: 'numeric', month: 'short', day: 'numeric' });
+}
+
+// ─── BOOT ─────────────────────────────────────────────────────────────────────
+loadData();
+</script>
+</body>
+</html>
