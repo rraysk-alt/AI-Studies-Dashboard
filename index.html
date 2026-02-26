@@ -208,6 +208,8 @@ async function loadData() {
 }
 
 function init() {
+  // Filter out any studies before 2026 (malformed dates)
+  allStudies = allStudies.filter(s => s.date && s.date >= '2026-01-01');
   // Sort newest first
   allStudies.sort((a, b) => new Date(b.date) - new Date(a.date));
   filtered = [...allStudies];
